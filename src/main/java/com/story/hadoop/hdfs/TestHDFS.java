@@ -57,7 +57,7 @@ public class TestHDFS {
 
     @Test
     public void blockSize() throws Exception {
-        Path path = new Path("/user/god/data.txt");
+        Path path = new Path("/user/god/dataTopN.txt");
         FileStatus fss = fs.getFileStatus(path);
         BlockLocation[] blks = fs.getFileBlockLocations(fss, 0, fss.getLen());
         for (BlockLocation blk : blks) {
