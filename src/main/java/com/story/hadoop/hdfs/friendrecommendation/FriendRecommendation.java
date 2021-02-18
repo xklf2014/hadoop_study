@@ -1,15 +1,15 @@
-package com.story.hadoop.maperreduce.topn;
+package com.story.hadoop.hdfs.friendrecommendation;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-
-public class MyTopN {
+public class FriendRecommendation {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration(true);
         conf.set("mapreduce.app-submission.cross-platform","true");
@@ -19,11 +19,8 @@ public class MyTopN {
         String[] remainingArgs = parser.getRemainingArgs();
 
         Job job = Job.getInstance(conf);
-        job.setJarByClass(MyTopN.class);
-        job.setJobName("MyTopN");
-
-        //地区字典表cache到maptask出现的节点
-        job.addCacheFile(new Path("/data/topn/dict/dict.txt").toUri());
+        job.setJarByClass(FriendRecommendation.class);
+        job.setJobName("FriendRecommendation");
 
         job.setJar("E:\\java_study\\hadoophdfs\\target\\hadoop-hdfs-1.0.0.1.jar");
         //设置输入路径
@@ -35,30 +32,18 @@ public class MyTopN {
         Path outPath = new Path(remainingArgs[remainingArgs.length-1]);
         if (outPath.getFileSystem(conf).exists(outPath)){
             outPath.getFileSystem(conf).delete(outPath,true);
-            //throw new RuntimeException("路径已存在:"+outPath.toString());
         }
 
         TextOutputFormat.setOutputPath(job,outPath);
 
         //map task
-        job.setMapperClass(TMapper.class);
-        job.setOutputKeyClass(TKey.class);
+        job.setMapperClass(FMapper.class);
+        job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
 
-        //partitioner  年，月，温度(倒叙)   分区
-        //相同的key获得相同的分区号
-        job.setPartitionerClass(TPartitioner.class);
-        job.setSortComparatorClass(TSortCompartor.class);
-        //combine
-        //job.setCombinerClass();
-
-        //reduce task
-        //grouping compartor
-        job.setGroupingComparatorClass(TGroupingCompartor.class);
         //reduce
-        job.setReducerClass(TReducer.class);
+        job.setReducerClass(FReducer.class);
 
         job.waitForCompletion(true);
     }
-
 }

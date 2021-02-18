@@ -12,6 +12,7 @@ public class TKey implements WritableComparable<TKey> {
     private int month;
     private int day;
     private int tempture;
+    private String location;
 
     public int getYear() {
         return year;
@@ -45,12 +46,20 @@ public class TKey implements WritableComparable<TKey> {
         this.tempture = tempture;
     }
 
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
     public void write(DataOutput out) throws IOException {
         out.writeInt(year);
         out.writeInt(month);
         out.writeInt(day);
         out.writeInt(tempture);
+        out.writeUTF(location);
     }
 
     public void readFields(DataInput in) throws IOException {
@@ -58,6 +67,7 @@ public class TKey implements WritableComparable<TKey> {
         this.month = in.readInt();
         this.day = in.readInt();
         this.tempture = in.readInt();
+        this.location = in.readUTF();
     }
 
     public int compareTo(TKey o) {
