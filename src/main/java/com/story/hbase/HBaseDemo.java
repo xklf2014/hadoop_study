@@ -1,5 +1,6 @@
 package com.story.hbase;
 
+import com.story.Phonerecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
@@ -22,8 +23,9 @@ public class HBaseDemo {
     Configuration conf = null;
     Connection conn = null;
     Admin admin = null;
-    TableName tableName = TableName.valueOf("shop");
+    //TableName tableName = TableName.valueOf("shop");
     //TableName tableName = TableName.valueOf("phonerecord");
+    TableName tableName = TableName.valueOf("phone");
     Table table = null;
 
     @Before
@@ -200,6 +202,45 @@ public class HBaseDemo {
             }
         }
         table.put(puts);
+    }
+
+    /**
+     * phone
+     * */
+    @Test
+    public void insertLotsOfDatasByProto() throws Exception {
+        List<Put> puts = new ArrayList<Put>();
+        for (int i = 0;i<10;i++){
+            String phoneNum = getNumber("158");
+            for (int j = 0; j < 10000; j++) {
+                String receNumber = getNumber("133");
+                String len = String.valueOf(random.nextInt(100));
+                String date = getDate("2021");
+                String type = String.valueOf(random.nextInt(2));
+                //iphone+ Long.MAX_VALUE减去时间戳，实现倒叙
+                String rowKey = phoneNum+"_"+(Long.MAX_VALUE-format.parse(date).getTime());
+
+                Phonerecord.PhoneRecord.Builder builder = Phonerecord.PhoneRecord.newBuilder();
+                builder.setReceNumber(receNumber);
+                builder.setLen(len);
+                builder.setDate(date);
+                builder.setType(type);
+
+                Put put = new Put(Bytes.toBytes(rowKey));
+                put.addColumn(Bytes.toBytes("cf"),Bytes.toBytes("phone"),builder.build().toByteArray());
+                puts.add(put);
+            }
+        }
+        table.put(puts);
+    }
+
+    @Test
+    public void getByProto() throws Exception {
+        Get get = new Get("15806245591_9223370396239979807".getBytes());
+        Result result = table.get(get);
+        byte[] bytes = CellUtil.cloneValue(result.getColumnLatestCell(Bytes.toBytes("cf"), Bytes.toBytes("phone")));
+        Phonerecord.PhoneRecord phoneRecord = Phonerecord.PhoneRecord.parseFrom(bytes);
+        System.out.println(phoneRecord);
     }
 
     private String getDate(String s) {
